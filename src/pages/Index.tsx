@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChessScribeProvider, useChessScribe } from '@/context/ChessScribeContext';
 import ImageUploader from '@/components/ImageUploader';
 import ChessNotation from '@/components/ChessNotation';
-import ChessBoard from '@/components/ChessBoard';
+import LichessAnalysisButton from '@/components/LichessAnalysisButton';
 import PGNExport from '@/components/PGNExport';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -117,15 +117,14 @@ const ChessScribeApp = () => {
 
         <div className="col-span-1">
           <Tabs defaultValue="notation" className="w-full">
-            <TabsList className="grid grid-cols-2 mb-4">
+            <TabsList className="grid grid-cols-1 mb-4">
               <TabsTrigger value="notation">Notación</TabsTrigger>
-              <TabsTrigger value="board">Tablero</TabsTrigger>
             </TabsList>
             <TabsContent value="notation">
               <ChessNotation />
-            </TabsContent>
-            <TabsContent value="board">
-              <ChessBoard />
+              <div className="mt-4 flex justify-center">
+                <LichessAnalysisButton />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
