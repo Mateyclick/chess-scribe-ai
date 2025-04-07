@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useChessScribe } from '@/context/ChessScribeContext';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Chess } from 'chess.js';
 
-// Chess piece Unicode symbols
+// Chess piece Unicode symbols with improved styling
 const pieces: Record<string, string> = {
   'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚',
   'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔',
@@ -72,14 +72,11 @@ const ChessBoard = () => {
   
   const boardPositions = getPiecePositions();
   
-  // Calculate total moves (each white+black pair counts as 1 move in the display)
-  const totalMoves = moves.reduce((count, move) => {
-    if (move.white) count++;
-    if (move.black) count++;
-    return count;
-  }, 0);
-  
   // Navigate through moves
+  const goToFirstMove = () => {
+    setCurrentMoveIndex(0);
+  };
+  
   const goToPreviousMove = () => {
     if (currentMoveIndex > 0) {
       setCurrentMoveIndex(currentMoveIndex - 1);
@@ -90,6 +87,10 @@ const ChessBoard = () => {
     if (currentMoveIndex < moves.length - 1) {
       setCurrentMoveIndex(currentMoveIndex + 1);
     }
+  };
+  
+  const goToLastMove = () => {
+    setCurrentMoveIndex(moves.length - 1);
   };
   
   // Generate chessboard squares
@@ -116,7 +117,9 @@ const ChessBoard = () => {
             className={`chess-square ${squareClass} relative w-full h-full flex items-center justify-center`}
           >
             {piece && (
-              <span className="piece text-3xl">{pieces[piece]}</span>
+              <span className="piece text-3xl md:text-4xl transition-transform hover:scale-110 select-none">
+                {pieces[piece]}
+              </span>
             )}
             {showFileLabel && (
               <span className={`chess-coordinate file-label absolute bottom-0 right-1 text-xs ${textClass}`}>
@@ -136,36 +139,83 @@ const ChessBoard = () => {
     return squares;
   };
   
+  // Get current half-move and color to move
+  const getCurrentMoveInfo = () => {
+    const moveInfo = {
+      moveNumber: Math.floor(currentMoveIndex / 2) + 1,
+      colorToMove: currentMoveIndex % 2 === 0 ? 'blancas' : 'negras'
+    };
+    
+    // For display, we'll show the actual move being viewed
+    if (currentMoveIndex < moves.length) {
+      const move = moves[currentMoveIndex];
+      moveInfo.moveNumber = move.moveNumber;
+      moveInfo.colorToMove = move.black ? 'negras' : 'blancas';
+    }
+    
+    return moveInfo;
+  };
+  
+  const moveInfo = getCurrentMoveInfo();
+  
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="chess-board shadow-lg rounded-md overflow-hidden grid grid-cols-8 aspect-square">
+      <div className="chess-board shadow-lg rounded-md overflow-hidden grid grid-cols-8 aspect-square border-2 border-gray-800">
         {renderBoard()}
       </div>
       
-      <div className="flex justify-between items-center mt-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={goToPreviousMove}
-          disabled={currentMoveIndex === 0}
-        >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Anterior
-        </Button>
-        
-        <div className="text-sm font-medium">
-          Movimiento {currentMoveIndex + 1} de {moves.length}
+      <div className="flex justify-between items-center mt-4 gap-2">
+        <div className="flex gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToFirstMove}
+            disabled={currentMoveIndex === 0}
+            title="Primer movimiento"
+            className="h-8 w-8"
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToPreviousMove}
+            disabled={currentMoveIndex === 0}
+            title="Movimiento anterior"
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
         </div>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={goToNextMove}
-          disabled={currentMoveIndex === moves.length - 1}
-        >
-          Siguiente
-          <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
+        <div className="text-sm font-medium">
+          {moveInfo.moveNumber}.{moveInfo.colorToMove === 'negras' ? '..' : ''} {moveInfo.colorToMove}
+        </div>
+        
+        <div className="flex gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToNextMove}
+            disabled={currentMoveIndex === moves.length - 1}
+            title="Siguiente movimiento"
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToLastMove}
+            disabled={currentMoveIndex === moves.length - 1}
+            title="Último movimiento"
+            className="h-8 w-8"
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
