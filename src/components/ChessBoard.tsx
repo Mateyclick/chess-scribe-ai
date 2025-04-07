@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useChessScribe } from '@/context/ChessScribeContext';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Chess } from 'chess.js';
 
 // Chess piece Unicode symbols
 const pieces: Record<string, string> = {
@@ -11,8 +12,40 @@ const pieces: Record<string, string> = {
 };
 
 const ChessBoard = () => {
-  const { currentPosition, moves } = useChessScribe();
+  const { moves } = useChessScribe();
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
+  const [chessInstance] = useState(new Chess());
+  const [currentPosition, setCurrentPosition] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+  
+  // Update the board when move index changes
+  useEffect(() => {
+    // Reset to initial position
+    chessInstance.reset();
+    
+    // Apply moves up to currentMoveIndex
+    const flatMoves = [];
+    for (let i = 0; i <= currentMoveIndex && i < moves.length; i++) {
+      if (moves[i].white) flatMoves.push(moves[i].white);
+      if (i === currentMoveIndex && !moves[i].black) break;
+      if (moves[i].black) flatMoves.push(moves[i].black);
+    }
+    
+    try {
+      // Apply each move
+      flatMoves.forEach(move => {
+        try {
+          chessInstance.move(move);
+        } catch (err) {
+          console.log(`Invalid move: ${move}`);
+        }
+      });
+      
+      // Update position
+      setCurrentPosition(chessInstance.fen());
+    } catch (error) {
+      console.error('Error applying moves:', error);
+    }
+  }, [currentMoveIndex, moves]);
   
   // Parse FEN to get piece positions
   const getPiecePositions = () => {
@@ -39,27 +72,25 @@ const ChessBoard = () => {
   
   const boardPositions = getPiecePositions();
   
-  // Navigate through moves
-  const goToPreviousMove = () => {
-    if (currentMoveIndex > 0) {
-      setCurrentMoveIndex(currentMoveIndex - 1);
-      // In a real implementation, this would update the board position
-    }
-  };
-  
-  const goToNextMove = () => {
-    if (currentMoveIndex < totalMoves - 1) {
-      setCurrentMoveIndex(currentMoveIndex + 1);
-      // In a real implementation, this would update the board position
-    }
-  };
-  
-  // Calculate total moves (each white+black pair counts as 1 move)
+  // Calculate total moves (each white+black pair counts as 1 move in the display)
   const totalMoves = moves.reduce((count, move) => {
     if (move.white) count++;
     if (move.black) count++;
     return count;
   }, 0);
+  
+  // Navigate through moves
+  const goToPreviousMove = () => {
+    if (currentMoveIndex > 0) {
+      setCurrentMoveIndex(currentMoveIndex - 1);
+    }
+  };
+  
+  const goToNextMove = () => {
+    if (currentMoveIndex < moves.length - 1) {
+      setCurrentMoveIndex(currentMoveIndex + 1);
+    }
+  };
   
   // Generate chessboard squares
   const renderBoard = () => {
@@ -123,14 +154,14 @@ const ChessBoard = () => {
         </Button>
         
         <div className="text-sm font-medium">
-          Movimiento {currentMoveIndex} de {totalMoves}
+          Movimiento {currentMoveIndex + 1} de {moves.length}
         </div>
         
         <Button
           variant="outline"
           size="sm"
           onClick={goToNextMove}
-          disabled={currentMoveIndex === totalMoves - 1}
+          disabled={currentMoveIndex === moves.length - 1}
         >
           Siguiente
           <ChevronRight className="h-4 w-4 ml-2" />
