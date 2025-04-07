@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useChessScribe } from '@/context/ChessScribeContext';
 import { Button } from '@/components/ui/button';
@@ -55,7 +54,7 @@ const pieces: Record<string, React.ReactNode> = {
   'k': (
     <svg viewBox="0 0 45 45" className="chess-piece black king">
       <g fill="none" fillRule="evenodd" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22.5 11.63V6M20 8h5" stroke-linejoin="miter"/>
+        <path d="M22.5 11.63V6M20 8h5" strokeLinejoin="miter"/>
         <path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5" fill="#000" strokeLinecap="butt" strokeLinejoin="miter"/>
         <path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10V37z" fill="#000"/>
         <path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0" stroke="#fff"/>
@@ -130,12 +129,9 @@ const ChessBoard = () => {
   const [lastMove, setLastMove] = useState<[string, string] | null>(null);
   const [stockfishEval, setStockfishEval] = useState<string | null>(null);
   
-  // Update the board when move index changes
   useEffect(() => {
-    // Reset to initial position
     chessInstance.reset();
     
-    // Apply moves up to currentMoveIndex
     const flatMoves = [];
     let lastMoveFrom = '';
     let lastMoveTo = '';
@@ -145,7 +141,7 @@ const ChessBoard = () => {
         flatMoves.push(moves[i].white);
         if (i === currentMoveIndex) {
           try {
-            const moveInfo = chessInstance.move(moves[i].white, { sloppy: true });
+            const moveInfo = chessInstance.move(moves[i].white);
             if (moveInfo) {
               lastMoveFrom = moveInfo.from;
               lastMoveTo = moveInfo.to;
@@ -162,7 +158,7 @@ const ChessBoard = () => {
         flatMoves.push(moves[i].black);
         if (i === currentMoveIndex) {
           try {
-            const moveInfo = chessInstance.move(moves[i].black, { sloppy: true });
+            const moveInfo = chessInstance.move(moves[i].black);
             if (moveInfo) {
               lastMoveFrom = moveInfo.from;
               lastMoveTo = moveInfo.to;
@@ -175,20 +171,18 @@ const ChessBoard = () => {
     }
     
     try {
-      // Reset and apply all moves except the last one
       chessInstance.reset();
       for (let i = 0; i < flatMoves.length - 1; i++) {
         try {
-          chessInstance.move(flatMoves[i], { sloppy: true });
+          chessInstance.move(flatMoves[i]);
         } catch (err) {
           console.log(`Invalid move: ${flatMoves[i]}`);
         }
       }
       
-      // Apply the last move to capture the from/to squares
       if (flatMoves.length > 0) {
         try {
-          const moveInfo = chessInstance.move(flatMoves[flatMoves.length - 1], { sloppy: true });
+          const moveInfo = chessInstance.move(flatMoves[flatMoves.length - 1]);
           if (moveInfo) {
             lastMoveFrom = moveInfo.from;
             lastMoveTo = moveInfo.to;
@@ -202,10 +196,8 @@ const ChessBoard = () => {
         setLastMove(null);
       }
       
-      // Update position
       setCurrentPosition(chessInstance.fen());
       
-      // Simulate Stockfish evaluation (this would be replaced with actual Stockfish)
       const randomEval = (Math.random() * 2 - 1).toFixed(1);
       setStockfishEval(randomEval);
       
@@ -214,7 +206,6 @@ const ChessBoard = () => {
     }
   }, [currentMoveIndex, moves]);
   
-  // Parse FEN to get piece positions
   const getPiecePositions = () => {
     const board = Array(64).fill(null);
     const rows = currentPosition.split(' ')[0].split('/');
@@ -239,7 +230,6 @@ const ChessBoard = () => {
   
   const boardPositions = getPiecePositions();
   
-  // Navigate through moves
   const goToFirstMove = () => {
     setCurrentMoveIndex(0);
   };
@@ -260,7 +250,6 @@ const ChessBoard = () => {
     setCurrentMoveIndex(moves.length - 1);
   };
   
-  // Generate chessboard squares
   const renderBoard = () => {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
@@ -274,21 +263,17 @@ const ChessBoard = () => {
         const index = row * 8 + col;
         const piece = boardPositions[index];
         
-        // Generate algebraic notation for the square
         const squareName = `${files[col]}${ranks[row]}`;
         
-        // Check if this square is part of the last move
         const isLastMoveFrom = lastMove && lastMove[0] === squareName;
         const isLastMoveTo = lastMove && lastMove[1] === squareName;
         
-        // Highlight classes for last move
         const highlightClass = isLastMoveFrom 
           ? 'bg-[#f7d26e50]' 
           : isLastMoveTo 
             ? 'bg-[#f7d26e80]' 
             : '';
         
-        // Show coordinates only for outer squares
         const showFileLabel = row === 7;
         const showRankLabel = col === 0;
         
@@ -321,14 +306,12 @@ const ChessBoard = () => {
     return squares;
   };
   
-  // Get current half-move and color to move
   const getCurrentMoveInfo = () => {
     const moveInfo = {
       moveNumber: Math.floor(currentMoveIndex / 2) + 1,
       colorToMove: currentMoveIndex % 2 === 0 ? 'blancas' : 'negras'
     };
     
-    // For display, we'll show the actual move being viewed
     if (currentMoveIndex < moves.length) {
       const move = moves[currentMoveIndex];
       moveInfo.moveNumber = move.moveNumber;
@@ -340,19 +323,22 @@ const ChessBoard = () => {
   
   const moveInfo = getCurrentMoveInfo();
   
-  // Render Stockfish analysis panel
   const renderStockfishPanel = () => {
-    const evalClass = stockfishEval && parseFloat(stockfishEval) > 0 
-      ? 'text-green-600' 
-      : stockfishEval && parseFloat(stockfishEval) < 0 
-        ? 'text-red-600' 
-        : 'text-gray-600';
+    const evalNumber = stockfishEval ? parseFloat(stockfishEval) : 0;
+    const evalClass = 
+      evalNumber > 0 
+        ? 'text-green-600' 
+        : evalNumber < 0 
+          ? 'text-red-600' 
+          : 'text-gray-600';
     
     return (
       <div className="bg-[#333] text-white p-2 rounded-md mt-4 text-left text-sm">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span className={evalClass}>{stockfishEval && `${stockfishEval > 0 ? '+' : ''}${stockfishEval}`}</span>
+          <span className={evalClass}>
+            {stockfishEval && `${evalNumber > 0 ? '+' : ''}${stockfishEval}`}
+          </span>
           <span className="text-gray-300 text-xs ml-auto">SF 11 HCE</span>
         </div>
         <div className="text-xs space-y-1">
