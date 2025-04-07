@@ -4,7 +4,8 @@ import { useChessScribe } from '@/context/ChessScribeContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Edit2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Edit2, CheckCircle, AlertTriangle, Plus } from 'lucide-react';
+import { convertSpanishToStandard } from '@/lib/notationUtils';
 
 const ChessNotation = () => {
   const { moves, updateMove, addMove } = useChessScribe();
@@ -41,23 +42,39 @@ const ChessNotation = () => {
 
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-xl font-serif">Notación detectada</CardTitle>
+        <Button 
+          variant="outline"
+          size="sm"
+          className="h-8 px-2 text-xs"
+          onClick={addMove}
+        >
+          <Plus className="h-3 w-3 mr-1" />
+          Añadir
+        </Button>
       </CardHeader>
       
-      <CardContent className="space-y-4">
-        <div className="notation-text p-3 bg-chess-cream/50 rounded shadow-inner min-h-[150px]">
+      <CardContent>
+        <div className="notation-text p-3 bg-chess-cream/50 rounded shadow-inner max-h-[350px] overflow-y-auto">
           {moves.length === 0 ? (
             <p className="text-muted-foreground text-center italic">
               No se ha detectado ninguna notación todavía. Sube una imagen para comenzar.
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-[auto_1fr_1fr] gap-x-3 gap-y-1.5 text-sm">
+              {/* Header */}
+              <div className="font-semibold text-xs text-center">#</div>
+              <div className="font-semibold text-xs">Blancas</div>
+              <div className="font-semibold text-xs">Negras</div>
+              
+              {/* Moves */}
               {moves.map((move) => (
-                <div key={move.id} className="flex items-start">
-                  <span className="move-number mr-2">{move.moveNumber}.</span>
+                <React.Fragment key={move.id}>
+                  <div className="text-center text-xs text-muted-foreground py-1">{move.moveNumber}.</div>
                   
-                  <div className="flex-1 flex gap-2">
+                  {/* White move */}
+                  <div>
                     {editingMove === move.id && editingColor === 'white' ? (
                       <div className="flex items-center space-x-1">
                         <Input
@@ -65,32 +82,32 @@ const ChessNotation = () => {
                           onChange={(e) => setEditValue(e.target.value)}
                           onKeyDown={handleKeyDown}
                           autoFocus
-                          className="h-8 w-20"
+                          className="h-7 text-sm"
                         />
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8" 
+                          className="h-7 w-7" 
                           onClick={handleEditSave}
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle className="h-3 w-3" />
                         </Button>
                       </div>
                     ) : (
-                      <span 
-                        className={`move-text flex-1 ${move.whiteValid === false ? 'line-through text-red-500' : ''}`}
+                      <div 
+                        className={`py-1 px-2 rounded hover:bg-gray-100 cursor-pointer flex items-center justify-between ${
+                          move.whiteValid === false ? 'text-red-500' : ''
+                        }`}
                         onClick={() => handleEditClick(move.id, 'white', move.white)}
                       >
-                        {move.white || '_____'}
-                        <button className="ml-1 opacity-30 hover:opacity-100">
-                          <Edit2 className="h-3 w-3 inline" />
-                        </button>
-                        {move.whiteValid === false && (
-                          <AlertTriangle className="h-3 w-3 inline ml-1 text-yellow-500" />
-                        )}
-                      </span>
+                        <span>{move.white || '—'}</span>
+                        <Edit2 className="h-3 w-3 opacity-30 hover:opacity-100" />
+                      </div>
                     )}
-                    
+                  </div>
+                  
+                  {/* Black move */}
+                  <div>
                     {editingMove === move.id && editingColor === 'black' ? (
                       <div className="flex items-center space-x-1">
                         <Input
@@ -98,46 +115,33 @@ const ChessNotation = () => {
                           onChange={(e) => setEditValue(e.target.value)}
                           onKeyDown={handleKeyDown}
                           autoFocus
-                          className="h-8 w-20"
+                          className="h-7 text-sm"
                         />
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8" 
+                          className="h-7 w-7" 
                           onClick={handleEditSave}
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle className="h-3 w-3" />
                         </Button>
                       </div>
                     ) : (
-                      <span 
-                        className={`move-text flex-1 ${move.blackValid === false ? 'line-through text-red-500' : ''}`}
+                      <div 
+                        className={`py-1 px-2 rounded hover:bg-gray-100 cursor-pointer flex items-center justify-between ${
+                          move.blackValid === false ? 'text-red-500' : ''
+                        }`}
                         onClick={() => handleEditClick(move.id, 'black', move.black)}
                       >
-                        {move.black || '_____'}
-                        <button className="ml-1 opacity-30 hover:opacity-100">
-                          <Edit2 className="h-3 w-3 inline" />
-                        </button>
-                        {move.blackValid === false && (
-                          <AlertTriangle className="h-3 w-3 inline ml-1 text-yellow-500" />
-                        )}
-                      </span>
+                        <span>{move.black || '—'}</span>
+                        <Edit2 className="h-3 w-3 opacity-30 hover:opacity-100" />
+                      </div>
                     )}
                   </div>
-                </div>
+                </React.Fragment>
               ))}
             </div>
           )}
-        </div>
-        
-        <div className="flex justify-end">
-          <Button 
-            variant="outline"
-            className="text-sm"
-            onClick={addMove}
-          >
-            Añadir movimiento
-          </Button>
         </div>
       </CardContent>
     </Card>

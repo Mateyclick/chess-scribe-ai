@@ -6,9 +6,19 @@ import { Download, ClipboardCopy, CheckCircle2 } from 'lucide-react';
 import { useChessScribe } from '@/context/ChessScribeContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useState } from 'react';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 const PGNExport = () => {
-  const { generatePGN } = useChessScribe();
+  const { 
+    generatePGN, 
+    tournamentName, 
+    playerWhite, 
+    playerBlack,
+    setTournamentName,
+    setPlayerWhite,
+    setPlayerBlack 
+  } = useChessScribe();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
@@ -50,8 +60,42 @@ const PGNExport = () => {
         <CardTitle className="text-xl font-serif">Exportar PGN</CardTitle>
       </CardHeader>
       
-      <CardContent>
-        <pre className="bg-chess-cream/50 p-3 rounded text-sm overflow-auto max-h-40 shadow-inner">
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="tournament">Torneo</Label>
+            <Input 
+              id="tournament" 
+              value={tournamentName} 
+              onChange={(e) => setTournamentName(e.target.value)}
+              placeholder="Nombre del torneo"
+            />
+          </div>
+          
+          <div className="col-span-2 grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="playerWhite">Jugador (Blancas)</Label>
+              <Input 
+                id="playerWhite" 
+                value={playerWhite} 
+                onChange={(e) => setPlayerWhite(e.target.value)}
+                placeholder="Jugador con blancas"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="playerBlack">Jugador (Negras)</Label>
+              <Input 
+                id="playerBlack" 
+                value={playerBlack} 
+                onChange={(e) => setPlayerBlack(e.target.value)}
+                placeholder="Jugador con negras"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <pre className="bg-chess-cream/50 p-3 rounded text-sm overflow-auto max-h-40 shadow-inner whitespace-pre-wrap font-mono">
           {generatePGN()}
         </pre>
       </CardContent>

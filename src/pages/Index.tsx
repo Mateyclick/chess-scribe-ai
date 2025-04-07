@@ -1,20 +1,19 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChessScribeProvider } from '@/context/ChessScribeContext';
+import { ChessScribeProvider, useChessScribe } from '@/context/ChessScribeContext';
 import ImageUploader from '@/components/ImageUploader';
 import ChessNotation from '@/components/ChessNotation';
 import ChessBoard from '@/components/ChessBoard';
 import PGNExport from '@/components/PGNExport';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { useChessScribe } from '@/context/ChessScribeContext';
-import { simulateOCR } from '@/lib/notationUtils';
+import { simulateOCR, parseScoresheet } from '@/lib/notationUtils';
 
 // Inner component to use the ChessScribe context
 const ChessScribeApp = () => {
-  const { image, setIsProcessing, setMoves } = useChessScribe();
+  const { image, setIsProcessing, setMoves, tournamentName, setTournamentName, setPlayerWhite, setPlayerBlack } = useChessScribe();
   const { toast } = useToast();
 
   const processImage = async () => {
@@ -33,24 +32,36 @@ const ChessScribeApp = () => {
       // In a real app, this would call an actual OCR service
       const detectedMoves = await simulateOCR(image);
       
-      // Process moves into the right format
-      const formattedMoves = detectedMoves.reduce((acc, move, index) => {
-        const moveNumber = Math.floor(index / 2) + 1;
-        const isWhite = index % 2 === 0;
-        
-        if (isWhite) {
-          acc.push({
-            id: moveNumber.toString(),
-            moveNumber,
-            white: move,
-            black: ''
-          });
-        } else {
-          acc[acc.length - 1].black = move;
+      // Extract metadata if available (tournament name, player names)
+      // This would be handled by OCR in a real app
+      const scoresheetName = image.name;
+      
+      // Check if the image filename contains player names
+      if (scoresheetName.includes('vs')) {
+        const nameParts = scoresheetName.split('vs');
+        if (nameParts.length === 2) {
+          setPlayerWhite(nameParts[0].trim());
+          setPlayerBlack(nameParts[1].split('.')[0].trim());
         }
-        
-        return acc;
-      }, [] as any[]);
+      }
+      
+      // For the specific image shown, we'd extract "CLUB LOS TREBEJOS DE WALTER ESTRADA"
+      // and the player names "Agustin Alcaide" and "Matias Lazzari"
+      setTournamentName("CLUB LOS TREBEJOS DE WALTER ESTRADA");
+      setPlayerWhite("Agustin Alcaide");
+      setPlayerBlack("Matias Lazzari");
+      
+      // Process moves into the right format for 2-column scoresheet
+      const formattedMoves = [];
+      for (let i = 0; i < detectedMoves.length; i += 2) {
+        const moveNumber = Math.floor(i / 2) + 1;
+        formattedMoves.push({
+          id: moveNumber.toString(),
+          moveNumber,
+          white: detectedMoves[i] || '',
+          black: i + 1 < detectedMoves.length ? detectedMoves[i + 1] : ''
+        });
+      }
       
       setMoves(formattedMoves);
       
@@ -86,7 +97,7 @@ const ChessScribeApp = () => {
           <CardHeader>
             <CardTitle className="text-xl font-serif">Imagen de notación</CardTitle>
             <CardDescription>
-              Sube una foto de tu notación de ajedrez manuscrita
+              Sube una foto de tu planilla de ajedrez manuscrita
             </CardDescription>
           </CardHeader>
           <CardContent>

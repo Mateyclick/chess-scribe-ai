@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { parseScoresheet } from '@/lib/notationUtils';
 
 // Define types
 export type PieceSymbol = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
@@ -34,6 +35,14 @@ export type ChessScribeContextType = {
   
   // PGN export
   generatePGN: () => string;
+  
+  // Scoresheet metadata
+  tournamentName: string;
+  playerWhite: string;
+  playerBlack: string;
+  setTournamentName: (name: string) => void;
+  setPlayerWhite: (name: string) => void;
+  setPlayerBlack: (name: string) => void;
 };
 
 export const ChessScribeContext = createContext<ChessScribeContextType | undefined>(undefined);
@@ -44,6 +53,11 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [moves, setMoves] = useState<Move[]>([{ id: '1', moveNumber: 1, white: '', black: '' }]);
   const [currentPosition, setCurrentPosition] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'); // Initial position
+  
+  // Scoresheet metadata
+  const [tournamentName, setTournamentName] = useState<string>('');
+  const [playerWhite, setPlayerWhite] = useState<string>('');
+  const [playerBlack, setPlayerBlack] = useState<string>('');
 
   // Set image and create URL
   const setImage = (file: File | null) => {
@@ -51,6 +65,9 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
     if (file) {
       const url = URL.createObjectURL(file);
       setImageUrl(url);
+      
+      // Reset moves when a new image is loaded
+      setMoves([{ id: '1', moveNumber: 1, white: '', black: '' }]);
     } else {
       setImageUrl(null);
     }
@@ -78,18 +95,29 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
 
   // Generate PGN
   const generatePGN = () => {
-    let pgn = `[Event "ChessScribe AI Generated Game"]
-[Date "${new Date().toISOString().split('T')[0]}"]
-[White "White"]
-[Black "Black"]
+    // Format date as YYYY.MM.DD
+    const date = new Date().toISOString().split('T')[0].replace(/-/g, '.');
+    
+    // Start with PGN headers
+    let pgn = `[Event "${tournamentName || 'ChessScribe AI Generated Game'}"]
+[Site "?"]
+[Date "${date}"]
+[Round "?"]
+[White "${playerWhite || 'White'}"]
+[Black "${playerBlack || 'Black'}"]
 [Result "*"]
 
 `;
     
     // Format moves
     moves.forEach(move => {
-      pgn += `${move.moveNumber}. ${move.white || ''} ${move.black || ''} `;
+      if (move.white || move.black) {
+        pgn += `${move.moveNumber}. ${move.white || ''} ${move.black || ''} `;
+      }
     });
+    
+    // Add result if available (default to ongoing game)
+    pgn += '*';
     
     return pgn.trim();
   };
@@ -106,7 +134,13 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
     updateMove,
     currentPosition,
     setCurrentPosition,
-    generatePGN
+    generatePGN,
+    tournamentName,
+    playerWhite,
+    playerBlack,
+    setTournamentName,
+    setPlayerWhite,
+    setPlayerBlack
   };
 
   return (
