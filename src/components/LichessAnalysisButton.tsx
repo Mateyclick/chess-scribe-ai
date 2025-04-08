@@ -6,7 +6,7 @@ import { useChessScribe } from '@/context/ChessScribeContext';
 import { useToast } from '@/components/ui/use-toast';
 
 const LichessAnalysisButton = () => {
-  const { generatePGN, validateMoves } = useChessScribe();
+  const { generatePGN, validateMoves, moves } = useChessScribe();
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
 
@@ -14,9 +14,14 @@ const LichessAnalysisButton = () => {
     setIsValidating(true);
     
     // Validate moves before proceeding
-    const isValid = validateMoves();
+    validateMoves();
     
-    if (!isValid) {
+    // Check if there are any invalid moves
+    const hasInvalidMoves = moves.some(
+      move => (move.white && move.whiteValid === false) || (move.black && move.blackValid === false)
+    );
+    
+    if (hasInvalidMoves) {
       toast({
         title: "Movimientos inválidos",
         description: "Hay movimientos inválidos en la notación. Por favor, corríjalos antes de continuar.",
