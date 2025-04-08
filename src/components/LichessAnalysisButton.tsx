@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, AlertTriangle } from 'lucide-react';
 import { useChessScribe } from '@/context/ChessScribeContext';
 import { useToast } from '@/components/ui/use-toast';
+import { convertSpanishToStandard } from '@/lib/notationUtils';
 
 const LichessAnalysisButton = () => {
   const { generatePGN, validateMoves, moves } = useChessScribe();

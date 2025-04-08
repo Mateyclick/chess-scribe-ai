@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { parseScoresheet } from '@/lib/notationUtils';
+import { parseScoresheet, convertSpanishToStandard } from '@/lib/notationUtils';
 import { Chess } from 'chess.js';
 
 // Define types
@@ -120,8 +120,11 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
       // Validate white's move if present
       if (move.white && move.white.trim() !== '') {
         try {
+          // Convertir notación española a estándar (inglés)
+          const standardWhiteMove = convertSpanishToStandard(move.white);
+          
           // Attempt to make the move
-          chess.move(move.white, { strict: true });
+          chess.move(standardWhiteMove, { strict: true });
           move.whiteValid = true;
         } catch (error) {
           move.whiteValid = false;
@@ -134,8 +137,11 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
       // Validate black's move if present
       if (move.black && move.black.trim() !== '') {
         try {
+          // Convertir notación española a estándar (inglés)
+          const standardBlackMove = convertSpanishToStandard(move.black);
+          
           // Attempt to make the move
-          chess.move(move.black, { strict: true });
+          chess.move(standardBlackMove, { strict: true });
           move.blackValid = true;
         } catch (error) {
           move.blackValid = false;
