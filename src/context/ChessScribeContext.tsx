@@ -46,7 +46,7 @@ export type ChessScribeContextType = {
   setPlayerBlack: (name: string) => void;
   
   // Move validation
-  validateMoves: () => void;
+  validateMoves: () => boolean;
 };
 
 export const ChessScribeContext = createContext<ChessScribeContextType | undefined>(undefined);
@@ -85,18 +85,31 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
 
   // Update move
   const updateMove = (id: string, whiteMove?: string, blackMove?: string) => {
-    setMoves(moves.map(move => {
+    const updatedMoves = moves.map(move => {
       if (move.id === id) {
-        return {
+        // Create a new move object with updated values
+        const updatedMove = {
           ...move,
           white: whiteMove !== undefined ? whiteMove : move.white,
           black: blackMove !== undefined ? blackMove : move.black
         };
+        
+        // Reset validation flags when move is updated
+        if (whiteMove !== undefined) {
+          updatedMove.whiteValid = undefined;
+        }
+        if (blackMove !== undefined) {
+          updatedMove.blackValid = undefined;
+        }
+        
+        return updatedMove;
       }
       return move;
-    }));
+    });
     
-    // Validar después de actualizar
+    setMoves(updatedMoves);
+    
+    // Validate after updating
     setTimeout(validateMoves, 0);
   };
 

@@ -15,7 +15,7 @@ const LichessAnalysisButton = () => {
     setIsValidating(true);
     
     // Validate moves before proceeding
-    validateMoves();
+    const validationResult = validateMoves();
     
     // Check if there are any invalid moves
     const hasInvalidMoves = moves.some(
