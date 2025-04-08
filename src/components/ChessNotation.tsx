@@ -31,6 +31,8 @@ const ChessNotation = () => {
       } else {
         updateMove(editingMove, undefined, editValue);
       }
+      
+      // Clear editing state after save
       setEditingMove(null);
       setEditingColor(null);
       setEditValue('');
@@ -99,6 +101,7 @@ const ChessNotation = () => {
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
                           onKeyDown={handleKeyDown}
+                          onBlur={handleEditSave}
                           autoFocus
                           className="h-7 text-sm"
                         />
@@ -107,6 +110,7 @@ const ChessNotation = () => {
                           size="icon" 
                           className="h-7 w-7" 
                           onClick={handleEditSave}
+                          type="button"
                         >
                           <CheckCircle className="h-3 w-3" />
                         </Button>
@@ -133,6 +137,7 @@ const ChessNotation = () => {
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
                           onKeyDown={handleKeyDown}
+                          onBlur={handleEditSave}
                           autoFocus
                           className="h-7 text-sm"
                         />
@@ -141,6 +146,7 @@ const ChessNotation = () => {
                           size="icon" 
                           className="h-7 w-7" 
                           onClick={handleEditSave}
+                          type="button"
                         >
                           <CheckCircle className="h-3 w-3" />
                         </Button>

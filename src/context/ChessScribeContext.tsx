@@ -85,21 +85,24 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
 
   // Update move
   const updateMove = (id: string, whiteMove?: string, blackMove?: string) => {
+    console.log(`Updating move ${id}: white=${whiteMove}, black=${blackMove}`);
+    
     const updatedMoves = moves.map(move => {
       if (move.id === id) {
         // Create a new move object with updated values
         const updatedMove = {
           ...move,
-          white: whiteMove !== undefined ? whiteMove : move.white,
-          black: blackMove !== undefined ? blackMove : move.black
         };
         
-        // Reset validation flags when move is updated
+        // Only update the properties that were provided
         if (whiteMove !== undefined) {
-          updatedMove.whiteValid = undefined;
+          updatedMove.white = whiteMove;
+          updatedMove.whiteValid = undefined; // Reset validation flag
         }
+        
         if (blackMove !== undefined) {
-          updatedMove.blackValid = undefined;
+          updatedMove.black = blackMove;
+          updatedMove.blackValid = undefined; // Reset validation flag
         }
         
         return updatedMove;
@@ -109,8 +112,11 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
     
     setMoves(updatedMoves);
     
-    // Validate after updating
-    setTimeout(validateMoves, 0);
+    // Validate after updating, but with a small delay
+    setTimeout(() => {
+      console.log("Validating moves after update");
+      validateMoves();
+    }, 50);
   };
 
   // Validate moves using chess.js
@@ -135,15 +141,17 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Convertir notación española a estándar (inglés)
           const standardWhiteMove = convertSpanishToStandard(move.white);
+          console.log(`Validating white move: ${move.white} -> ${standardWhiteMove}`);
           
           // Attempt to make the move
           chess.move(standardWhiteMove, { strict: true });
           move.whiteValid = true;
         } catch (error) {
+          console.error(`Invalid white move: ${move.white}`, error);
           move.whiteValid = false;
           allValid = false;
-          // If a move is invalid, all subsequent moves are potentially affected
-          break;
+          // If a move is invalid, don't break but continue to validate the rest
+          // This allows users to see all invalid moves
         }
       }
       
@@ -152,15 +160,17 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
         try {
           // Convertir notación española a estándar (inglés)
           const standardBlackMove = convertSpanishToStandard(move.black);
+          console.log(`Validating black move: ${move.black} -> ${standardBlackMove}`);
           
           // Attempt to make the move
           chess.move(standardBlackMove, { strict: true });
           move.blackValid = true;
         } catch (error) {
+          console.error(`Invalid black move: ${move.black}`, error);
           move.blackValid = false;
           allValid = false;
-          // If a move is invalid, all subsequent moves are potentially affected
-          break;
+          // If a move is invalid, don't break but continue to validate the rest
+          // This allows users to see all invalid moves
         }
       }
     }
