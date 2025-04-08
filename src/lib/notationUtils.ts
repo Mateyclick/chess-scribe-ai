@@ -1,3 +1,4 @@
+
 // Utility functions for chess notation processing
 
 // Define the Spanish chess notation mapping to standard PGN
@@ -20,20 +21,11 @@ export const convertSpanishToStandard = (move: string): string => {
   if (move === '0-0' || move === 'O-O') return 'O-O'; // Kingside castling
   if (move === '0-0-0' || move === 'O-O-O') return 'O-O-O'; // Queenside castling
   
-  // Handle disambiguation notation like "Cbd7" (Knight from b-file to d7)
+  // Replace Spanish piece symbols with standard
   let standardMove = move;
-  
-  // Replace Spanish piece symbols with standard while preserving disambiguation characters
   for (const [spanish, standard] of Object.entries(pieceMapping)) {
-    // This regex looks for a piece symbol at the start, and preserves any disambiguation characters that follow
-    const pieceRegex = new RegExp(`^(${spanish})([a-h1-8]?)(.*)$`);
-    standardMove = standardMove.replace(pieceRegex, (match, piece, disambig, rest) => {
-      return `${standard}${disambig}${rest}`;
-    });
+    standardMove = standardMove.replace(new RegExp(`^${spanish}`), standard);
   }
-  
-  // Process more complex Spanish notation like "Cbd7" - the Knight (C) on the b-file moves to d7
-  // These are already handled by the regex above, which preserves the disambiguation character
   
   return standardMove;
 };
@@ -50,7 +42,7 @@ export const validateMoveFormat = (move: string): boolean => {
   }
   
   // Check basic move format with regex for Spanish notation
-  // Allows formats like: Ae4, Cc3, Td1, Dh5, Re2, e4, dxe4, Axc6, Cxd5, Cbd7, etc.
+  // Allows formats like: Ae4, Cc3, Td1, Dh5, Re2, e4, dxe4, Axc6, Cxd5, etc.
   const moveRegex = /^([RADTC])?([a-h])?([1-8])?(x)?([a-h])([1-8])(=[RADTC])?[+#]?$/;
   return moveRegex.test(move);
 };

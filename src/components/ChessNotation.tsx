@@ -31,11 +31,8 @@ const ChessNotation = () => {
       } else {
         updateMove(editingMove, undefined, editValue);
       }
-      
-      // Clear editing state after save
       setEditingMove(null);
       setEditingColor(null);
-      setEditValue('');
     }
   };
 
@@ -45,7 +42,6 @@ const ChessNotation = () => {
     } else if (e.key === 'Escape') {
       setEditingMove(null);
       setEditingColor(null);
-      setEditValue('');
     }
   };
 
@@ -101,7 +97,6 @@ const ChessNotation = () => {
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
                           onKeyDown={handleKeyDown}
-                          onBlur={handleEditSave}
                           autoFocus
                           className="h-7 text-sm"
                         />
@@ -110,7 +105,6 @@ const ChessNotation = () => {
                           size="icon" 
                           className="h-7 w-7" 
                           onClick={handleEditSave}
-                          type="button"
                         >
                           <CheckCircle className="h-3 w-3" />
                         </Button>
@@ -120,11 +114,11 @@ const ChessNotation = () => {
                         className={`py-1 px-2 rounded hover:bg-gray-100 cursor-pointer flex items-center justify-between ${
                           move.whiteValid === false ? 'bg-red-100 text-red-500' : ''
                         }`}
-                        onClick={() => handleEditClick(move.id, 'white', move.white || '')}
+                        onClick={() => handleEditClick(move.id, 'white', move.white)}
                       >
                         <span>{move.white || '—'}</span>
-                        {move.whiteValid === false && <AlertTriangle className="h-3 w-3 text-red-500 ml-1" />}
-                        <Edit2 className="h-3 w-3 opacity-30 hover:opacity-100 ml-1" />
+                        {move.whiteValid === false && <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />}
+                        <Edit2 className="h-3 w-3 opacity-30 hover:opacity-100" />
                       </div>
                     )}
                   </div>
@@ -137,7 +131,6 @@ const ChessNotation = () => {
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
                           onKeyDown={handleKeyDown}
-                          onBlur={handleEditSave}
                           autoFocus
                           className="h-7 text-sm"
                         />
@@ -146,7 +139,6 @@ const ChessNotation = () => {
                           size="icon" 
                           className="h-7 w-7" 
                           onClick={handleEditSave}
-                          type="button"
                         >
                           <CheckCircle className="h-3 w-3" />
                         </Button>
@@ -156,11 +148,11 @@ const ChessNotation = () => {
                         className={`py-1 px-2 rounded hover:bg-gray-100 cursor-pointer flex items-center justify-between ${
                           move.blackValid === false ? 'bg-red-100 text-red-500' : ''
                         }`}
-                        onClick={() => handleEditClick(move.id, 'black', move.black || '')}
+                        onClick={() => handleEditClick(move.id, 'black', move.black)}
                       >
                         <span>{move.black || '—'}</span>
-                        {move.blackValid === false && <AlertTriangle className="h-3 w-3 text-red-500 ml-1" />}
-                        <Edit2 className="h-3 w-3 opacity-30 hover:opacity-100 ml-1" />
+                        {move.blackValid === false && <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />}
+                        <Edit2 className="h-3 w-3 opacity-30 hover:opacity-100" />
                       </div>
                     )}
                   </div>
