@@ -11,11 +11,20 @@ const LichessAnalysisButton = () => {
     // Obtener el PGN actualizado
     const pgn = generatePGN();
     
-    // Codificar el PGN para la URL
-    const encodedPGN = encodeURIComponent(pgn);
+    // Extraer solo los movimientos del PGN (eliminar los metadatos)
+    const movesText = pgn.split('\n\n')[1] || '';
     
-    // Crear la URL de Lichess para análisis
-    const lichessUrl = `https://lichess.org/analysis?pgn=${encodedPGN}`;
+    // Limpiar los números de movimiento y espacios extra
+    const cleanedMoves = movesText
+      .replace(/\d+\.\s+/g, '') // Eliminar números de movimiento como "1. "
+      .replace(/\s+/g, ' ')     // Normalizar espacios
+      .trim();
+    
+    // Convertir espacios a guiones bajos para el formato requerido
+    const formattedMoves = cleanedMoves.split(' ').join('_');
+    
+    // Crear la URL de Lichess con el formato /analysis/pgn/
+    const lichessUrl = `https://lichess.org/analysis/pgn/${formattedMoves}`;
     
     // Abrir en una nueva pestaña
     window.open(lichessUrl, '_blank', 'noopener,noreferrer');
