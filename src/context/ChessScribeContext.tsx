@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { parseScoresheet } from '@/lib/notationUtils';
+import { Chess } from 'chess.js';
 
 // Define types
 export type PieceSymbol = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
@@ -43,6 +44,9 @@ export type ChessScribeContextType = {
   setTournamentName: (name: string) => void;
   setPlayerWhite: (name: string) => void;
   setPlayerBlack: (name: string) => void;
+  
+  // Move validation
+  validateMoves: () => void;
 };
 
 export const ChessScribeContext = createContext<ChessScribeContextType | undefined>(undefined);
@@ -91,6 +95,61 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
       }
       return move;
     }));
+    
+    // Validar después de actualizar
+    setTimeout(validateMoves, 0);
+  };
+
+  // Validate moves using chess.js
+  const validateMoves = () => {
+    const chess = new Chess();
+    const updatedMoves = [...moves];
+    
+    // Reset the validation state
+    updatedMoves.forEach(move => {
+      move.whiteValid = undefined;
+      move.blackValid = undefined;
+    });
+    
+    let allValid = true;
+    
+    // Validate each move sequentially
+    for (let i = 0; i < updatedMoves.length; i++) {
+      const move = updatedMoves[i];
+      
+      // Validate white's move if present
+      if (move.white && move.white.trim() !== '') {
+        try {
+          // Attempt to make the move
+          chess.move(move.white, { strict: true });
+          move.whiteValid = true;
+        } catch (error) {
+          move.whiteValid = false;
+          allValid = false;
+          // If a move is invalid, all subsequent moves are potentially affected
+          break;
+        }
+      }
+      
+      // Validate black's move if present
+      if (move.black && move.black.trim() !== '') {
+        try {
+          // Attempt to make the move
+          chess.move(move.black, { strict: true });
+          move.blackValid = true;
+        } catch (error) {
+          move.blackValid = false;
+          allValid = false;
+          // If a move is invalid, all subsequent moves are potentially affected
+          break;
+        }
+      }
+    }
+    
+    // Update moves with validation results
+    setMoves(updatedMoves);
+    
+    return allValid;
   };
 
   // Generate PGN
@@ -140,7 +199,8 @@ export const ChessScribeProvider = ({ children }: { children: ReactNode }) => {
     playerBlack,
     setTournamentName,
     setPlayerWhite,
-    setPlayerBlack
+    setPlayerBlack,
+    validateMoves
   };
 
   return (
